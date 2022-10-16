@@ -3,19 +3,22 @@ const mongoose = require("mongoose");
 
 const app = express();
 
-app.use(express.json()); // instead bodyParser from theory
+app.use(express.json());
 
-// мидлваре для авторизации
-// .orFail()
-mongoose.connect("mongodb://localhost:27017/mydb", {
+mongoose.connect("mongodb://localhost:27017/mestodb", {
   useNewUrlParser: true,
-  useCreateIndex: true,
-  useFindAndModify: false,
 });
 
-app.get("/", (req, res) => {
-  res.send(`<h1>Main Page</h1>`);
+app.use((req, res, next) => {
+  req.user = {
+    _id: "634c79faeca95632c5cdf933",
+  };
+
+  next();
 });
+
+app.use("/users", require("./routes/users"));
+app.use("/cards", require("./routes/cards"));
 
 const { PORT = 3000 } = process.env;
 
