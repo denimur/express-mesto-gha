@@ -30,6 +30,11 @@ module.exports.deleteCard = (req, res) => {
     .orFail(new Error('not found'))
     .then((card) => res.send(card))
     .catch((err) => {
+      if (err instanceof mongoose.Error.CastError) {
+        return res.status(badRequest).send({
+          message: 'Переданы некорректные данные.',
+        });
+      }
       if (err.message === 'not found') {
         return res
           .status(notFound)

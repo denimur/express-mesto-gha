@@ -27,6 +27,11 @@ module.exports.getUser = (req, res) => {
     .orFail(new Error('not found'))
     .then((user) => res.send(user))
     .catch((err) => {
+      if (err instanceof mongoose.Error.CastError) {
+        return res.status(badRequest).send({
+          message: 'Переданы некорректные данные.',
+        });
+      }
       if (err.message === 'not found') {
         return res
           .status(notFound)
