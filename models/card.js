@@ -1,4 +1,4 @@
-const { Schema, model } = require("mongoose");
+const { Schema, model } = require('mongoose');
 
 const cardSchema = new Schema({
   name: {
@@ -13,7 +13,7 @@ const cardSchema = new Schema({
   },
   owner: {
     type: Schema.Types.ObjectId,
-    ref: "user",
+    ref: 'user',
     required: true,
   },
   likes: {
@@ -26,4 +26,4 @@ const cardSchema = new Schema({
   },
 });
 
-module.exports = model("card", cardSchema);
+module.exports = model('card', cardSchema);
