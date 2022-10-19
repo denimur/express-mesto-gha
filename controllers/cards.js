@@ -4,7 +4,6 @@ const { badRequest, notFound, unexpected } = require('../utils/status');
 
 module.exports.getCards = (req, res) => {
   Card.find({})
-    .populate('owner')
     .then((cards) => res.send({ data: cards }))
     .catch((err) => res.status(unexpected).send({ message: err.message }));
 };
@@ -50,7 +49,6 @@ module.exports.likeCard = (req, res) => Card.findByIdAndUpdate(
   { new: true },
 )
   .orFail(new Error('not found'))
-  .populate('owner')
   .then((card) => res.send(card))
   .catch((err) => {
     if (err instanceof mongoose.Error.CastError) {
