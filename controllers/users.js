@@ -1,4 +1,6 @@
 const { default: mongoose } = require('mongoose');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const { badRequest, notFound, unexpected } = require('../utils/status');
 
@@ -6,9 +8,10 @@ module.exports.createUser = (req, res) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-  User.create({
-    name, about, avatar, email, password,
-  })
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      name, about, avatar, email, password: hash,
+    }))
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err instanceof mongoose.Error.ValidationError) {
@@ -91,4 +94,15 @@ module.exports.updateAvatar = (req, res) => {
       }
       return res.status(unexpected).send({ message: err.message });
     });
+};
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+
+  User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, 'mySecretKey', { expiresIn: '7d' });
+      res.send({ token });
+    })
+    .catch((err) => res.status(401).send({ message: err.message }));
 };
