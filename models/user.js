@@ -1,6 +1,7 @@
 const { Schema, model } = require('mongoose');
 const { isEmail } = require('validator');
 const bcrypt = require('bcrypt');
+const { UnauthorizedError } = require('../utils/errors');
 
 const userSchema = new Schema({
   name: {
@@ -18,6 +19,7 @@ const userSchema = new Schema({
   avatar: {
     type: String,
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
+    match: /^https?:\/\/[www.]?[a-z0-9]*[-\._~:\/\?#\[\]@!\$&'\(\)\*\+,;=]*#?/gi,
   },
   email: {
     type: String,
@@ -32,19 +34,20 @@ const userSchema = new Schema({
     type: String,
     required: true,
     minlength: 5,
+    select: false,
   },
 });
 
 userSchema.statics.findUserByCredentials = function (email, password) {
-  return this.findOne({ email })
+  return this.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        return Promise.reject(new Error('Email or password are incorrect'));
+        throw new UnauthorizedError('Недействительный email или пароль.')
       }
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
-            return Promise.reject(new Error('Email or password are incorrect'));
+            throw new UnauthorizedError('Недействительный email или пароль.')
           }
           return user;
         });
