@@ -28,15 +28,15 @@ function celebrateUpdateAvatar() {
 function celebrateParams() {
   return celebrate({
     params: Joi.object().keys({
-      cardId: Joi.string().alphanum().length(24)
-    })
-  })
+      cardId: Joi.string().alphanum().length(24),
+    }),
+  });
 }
 
 router.get('/me', getCurrentUser);
 router.get('/', getUsers);
 // router.post('/', addUser);
-router.get('/:userId',celebrateParams(), getUser);
+router.get('/:userId', celebrateParams(), getUser);
 router.patch('/me', celebrateUpdateUser(), updateUser);
 router.patch('/me/avatar', celebrateUpdateAvatar(), updateAvatar);
 
