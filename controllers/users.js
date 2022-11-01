@@ -23,9 +23,9 @@ module.exports.createUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.code === 11000) {
-        throw new ConflictError('Пользователь с такими данными уже существует.');
+        next(new ConflictError('Пользователь с такими данными уже существует.'));
       }
-      next(err);
+      // next(err);
     });
 };
 
