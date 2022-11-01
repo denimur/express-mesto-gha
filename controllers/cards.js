@@ -1,8 +1,6 @@
-const { default: mongoose } = require('mongoose');
 const Card = require('../models/card');
-const {
-  BadRequestError, NotFoundError, UnauthorizedError, ForbiddenError,
-} = require('../utils/errors');
+const NotFoundError = require('../utils/NotFoundError');
+const ForbiddenError = require('../utils/ForbiddenError');
 const { ok } = require('../utils/status');
 
 module.exports.getCards = (req, res, next) => {

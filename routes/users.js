@@ -6,6 +6,7 @@ const {
   updateUser,
   updateAvatar,
   getUser,
+  addUser,
   getCurrentUser,
 } = require('../controllers/users');
 
@@ -19,13 +20,14 @@ const celebrateUpdateUser = () => celebrate({
 function celebrateUpdateAvatar() {
   return celebrate({
     body: Joi.object().keys({
-      avatar: Joi.string().required(),
+      avatar: Joi.string().required().pattern(/^(https?:\/\/)?([\w-]{1,32}\.[\w-]{1,32})[^\s@]*#?$/),
     }),
   });
 }
 
 router.get('/me', getCurrentUser);
 router.get('/', getUsers);
+router.post('/', addUser);
 router.get('/:userId', getUser);
 router.patch('/me', celebrateUpdateUser(), updateUser);
 router.patch('/me/avatar', celebrateUpdateAvatar(), updateAvatar);

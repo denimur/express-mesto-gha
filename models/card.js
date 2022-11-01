@@ -10,7 +10,7 @@ const cardSchema = new Schema({
   link: {
     type: String,
     required: true,
-    match: /^https?:\/\/[www.]?[a-z0-9]*[-._~:/?#\[\]@!\$&'()*+,;=]*#?$/gi,
+    match: /^(https?:\/\/)?([\w-]{1,32}\.[\w-]{1,32})[^\s@]*#?$/gi,
   },
   owner: {
     type: Schema.Types.ObjectId,

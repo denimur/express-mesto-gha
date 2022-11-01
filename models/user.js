@@ -1,7 +1,7 @@
 const { Schema, model } = require('mongoose');
 const { isEmail } = require('validator');
 const bcrypt = require('bcrypt');
-const { UnauthorizedError } = require('../utils/errors');
+const UnauthorizedError = require('../utils/UnauthorizedError');
 
 const userSchema = new Schema({
   name: {
@@ -19,7 +19,7 @@ const userSchema = new Schema({
   avatar: {
     type: String,
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
-    match: /^https?:\/\/[www.]?[a-z0-9]*[-._~:/?#\[\]@!\$&'()*+,;=]*#?$/gi,
+    match: /^(https?:\/\/)?([\w-]{1,32}\.[\w-]{1,32})[^\s@]*#?$/gi,
   },
   email: {
     type: String,

@@ -1,10 +1,9 @@
-const { default: mongoose } = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const {
-  BadRequestError, NotFoundError, UnauthorizedError, ForbiddenError,
-} = require('../utils/errors');
+const NotFoundError = require('../utils/NotFoundError');
+const UnauthorizedError = require('../utils/UnauthorizedError');
+const ForbiddenError = require('../utils/ForbiddenError');
 const { ok } = require('../utils/status');
 
 module.exports.createUser = (req, res, next) => {
@@ -12,20 +11,13 @@ module.exports.createUser = (req, res, next) => {
     name, about, avatar, email, password,
   } = req.body;
 
-  if (!email || !password) {
-    throw new BadRequestError('Переданы некорректные данные при создании пользователя.');
-  }
   bcrypt.hash(password, 10)
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
     }))
-    .then(({
-      name, about, avatar, email, _id,
-    }) => {
+    .then((user) => {
       res.status(ok).send({
-        data: {
-          name, about, avatar, email, _id,
-        },
+        name: user.name, about: user.about, avatar: user.avatar, email: user.email, _id: user._id,
       });
     })
     .catch(next);
@@ -34,6 +26,18 @@ module.exports.createUser = (req, res, next) => {
 module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((data) => res.status(ok).send({ data }))
+    .catch(next);
+};
+
+module.exports.addUser = (req, res, next) => {
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
+  // console.log({ name, about, avatar })
+  User.create({
+    name, about, avatar, email, password,
+  })
+    .then((user) => res.status(ok).send(user))
     .catch(next);
 };
 
