@@ -1,6 +1,7 @@
 const cookieParser = require('cookie-parser');
 const express = require('express');
 const mongoose = require('mongoose');
+const { Joi, celebrate, errors } = require('celebrate');
 const { notFoundController } = require('./controllers/notFoundController');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
@@ -14,8 +15,29 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
 });
 
-app.post('/signup', createUser);
-app.post('/signin', login);
+function celebrateCreateUser() {
+  return celebrate({
+    body: Joi.object().keys({
+      email: Joi.string().required().email(),
+      password: Joi.string().required().min(5),
+      name: Joi.string().min(2).max(30),
+      about: Joi.string().min(2).max(30),
+      avatar: Joi.string()
+    })
+  })
+}
+
+function celebrateLogin() {
+  return celebrate({
+    body: Joi.object().keys({
+      email: Joi.string().required().email(),
+      password: Joi.string().required().min(5)
+    })
+  })
+}
+
+app.post('/signup', celebrateCreateUser(), createUser);
+app.post('/signin', celebrateLogin(), login);
 
 app.use(auth);
 
@@ -32,16 +54,15 @@ const errorHandler = (err, req, res, next) => {
     return res.status(400).send({message: 'Переданы некорректные данные.'})
   }
   if (err instanceof mongoose.Error.ValidationError) {
-    return res.status(400).send({ message: 'Переданы некорректные данные при обновлении.' })
+    return res.status(400).send({ message: 'Переданы некорректные данные.' })
   }
-  // if (err instanceof UnauthorizedError) {
-  //   return res.status(401).send({ message: err.message })
-  // }
+
   const { statusCode = 500, message } = err;
 
   res.status(statusCode).send({ message: statusCode === 500 ? 'На сервере произошла ошибка' : message });
 }
-app.use(errorHandler)
+app.use(errors());
+app.use(errorHandler);
 
 const { PORT = 3000 } = process.env;
 

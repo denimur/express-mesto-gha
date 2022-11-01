@@ -1,86 +1,50 @@
 const { default: mongoose } = require('mongoose');
 const Card = require('../models/card');
-const { badRequest, notFound, unexpected } = require('../utils/status');
+const { BadRequestError, NotFoundError, UnauthorizedError, ForbiddenError } = require('../utils/errors');
+const { ok } = require('../utils/status');
 
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   Card.find({})
-    .then((cards) => res.send({ data: cards }))
-    .catch((err) => res.status(unexpected).send({ message: err.message }));
+    .then((cards) => res.status(ok).send({ data: cards }))
+    .catch(next);
 };
 
-module.exports.createCard = (req, res) => {
-  const ownwerId = req.user._id;
+module.exports.createCard = (req, res, next) => {
+  const ownerId = req.user._id;
   const { name, link } = req.body;
 
-  Card.create({ name, link, owner: ownwerId })
-    .then((card) => res.send(card))
-    .catch((err) => {
-      if (err instanceof mongoose.Error.ValidationError) {
-        return res.status(badRequest).send({
-          message: 'Переданы некорректные данные при создании карточки.',
-        });
-      }
-      return res.status(unexpected).send({ message: err.message });
-    });
+  Card.create({ name, link, owner: ownerId })
+    .then((card) => res.status(ok).send(card))
+    .catch(next);
 };
 
-module.exports.deleteCard = (req, res) => {
-  Card.findByIdAndDelete(req.params.cardId)
-    .orFail(new Error('not found'))
-    .then((card) => res.send(card))
-    .catch((err) => {
-      if (err instanceof mongoose.Error.CastError) {
-        return res.status(badRequest).send({
-          message: 'Переданы некорректные данные.',
-        });
+module.exports.deleteCard = (req, res, next) => {
+  Card.findById(req.params.cardId)
+    .orFail(new NotFoundError('Карточка с указанным _id не найдена.'))
+    .then((card) => {
+      if (req.user._id !== card.owner.toString()) {
+        throw new ForbiddenError('Удалять можно только свои карточки.')
       }
-      if (err.message === 'not found') {
-        return res
-          .status(notFound)
-          .send({ message: 'Карточка с указанным _id не найдена.' });
-      }
-      return res.status(unexpected).send({ message: err.message });
-    });
+      card.remove();
+      res.status(ok).send(card);
+    })
+    .catch(next)
 };
 
-module.exports.likeCard = (req, res) => Card.findByIdAndUpdate(
+module.exports.likeCard = (req, res, next) => Card.findByIdAndUpdate(
   req.params.cardId,
   { $addToSet: { likes: req.user._id } },
   { new: true },
 )
-  .orFail(new Error('not found'))
-  .then((card) => res.send(card))
-  .catch((err) => {
-    if (err instanceof mongoose.Error.CastError) {
-      return res.status(badRequest).send({
-        message: 'Переданы некорректные данные для постановки лайка.',
-      });
-    }
-    if (err.message === 'not found') {
-      return res
-        .status(notFound)
-        .send({ message: 'Передан несуществующий _id карточки.' });
-    }
-    return res.status(unexpected).send({ message: err.message });
-  });
+  .orFail(new NotFoundError('Передан несуществующий _id карточки.'))
+  .then((card) => res.status(ok).send(card))
+  .catch(next)
 
-module.exports.dislikeCard = (req, res) => Card.findByIdAndUpdate(
+module.exports.dislikeCard = (req, res, next) => Card.findByIdAndUpdate(
   req.params.cardId,
   { $pull: { likes: req.user._id } },
   { new: true },
 )
-  .orFail(new Error('not found'))
-  .then((card) => res.send(card))
-  .catch((err) => {
-    if (err instanceof mongoose.Error.CastError) {
-      return res
-        .status(badRequest)
-        .send({ message: 'Переданы некорректные данные при снятии лайка.' });
-    }
-    if (err.message === 'not found') {
-      return res
-        .status(notFound)
-        .send({ message: 'Передан несуществующий _id карточки.' });
-    }
-    return res.status(unexpected).send({ message: err.message });
-  });
+  .orFail(new NotFoundError('Передан несуществующий _id карточки.'))
+  .then((card) => res.status(ok).send(card))
+  .catch(next)
