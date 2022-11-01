@@ -18,10 +18,18 @@ function celebrateCreateCard() {
   });
 }
 
+function celebrateParams() {
+  return celebrate({
+    params: Joi.object().keys({
+      cardId: Joi.string().alphanum().length(24)
+    })
+  })
+}
+
 router.post('/', celebrateCreateCard(), createCard);
 router.get('/', getCards);
-router.delete('/:cardId', deleteCard);
-router.put('/:cardId/likes', likeCard);
-router.delete('/:cardId/likes', dislikeCard);
+router.delete('/:cardId', celebrateParams(), deleteCard);
+router.put('/:cardId/likes', celebrateParams(), likeCard);
+router.delete('/:cardId/likes', celebrateParams(), dislikeCard);
 
 module.exports = router;

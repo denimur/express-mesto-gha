@@ -22,7 +22,7 @@ function celebrateCreateUser() {
       password: Joi.string().required().min(5),
       name: Joi.string().min(2).max(30),
       about: Joi.string().min(2).max(30),
-      avatar: Joi.string(),
+      avatar: Joi.string().pattern(/^(https?:\/\/)?([\w-]{1,32}\.[\w-]{1,32})[^\s@]*#?$/),
     }),
   });
 }
@@ -47,21 +47,13 @@ app.use('/cards', require('./routes/cards'));
 app.use('/*', notFoundController);
 
 const errorHandler = (err, req, res, next) => {
-  if (err.code === 11000) {
-    return res.status(409).send({ message: 'Пользователь с такими данными уже создан.' });
-  }
-  if (err instanceof mongoose.Error.CastError) {
-    return res.status(400).send({ message: 'Переданы некорректные данные.' });
-  }
-  if (err instanceof mongoose.Error.ValidationError) {
-    return res.status(400).send({ message: 'Переданы некорректные данные.' });
-  }
+  const { statusCode = 500, message = 'На сервере произошла ошибка' } = err;
 
-  const { statusCode = 500, message } = err;
+  res.status(statusCode).send({ message });
 
-  return res.status(statusCode).send({ message: statusCode === 500 ? 'На сервере произошла ошибка' : message });
   next();
 };
+
 app.use(errors());
 app.use(errorHandler);
 

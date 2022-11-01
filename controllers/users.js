@@ -4,6 +4,7 @@ const User = require('../models/user');
 const NotFoundError = require('../utils/NotFoundError');
 const UnauthorizedError = require('../utils/UnauthorizedError');
 const ForbiddenError = require('../utils/ForbiddenError');
+const ConflictError = require('../utils/ConflictError');
 const { ok } = require('../utils/status');
 
 module.exports.createUser = (req, res, next) => {
@@ -20,7 +21,12 @@ module.exports.createUser = (req, res, next) => {
         name: user.name, about: user.about, avatar: user.avatar, email: user.email, _id: user._id,
       });
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.code === 11000) {
+        throw new ConflictError('Пользователь с такими данными уже существует.');
+      }
+      next(err);
+    });
 };
 
 module.exports.getUsers = (req, res, next) => {
@@ -29,17 +35,17 @@ module.exports.getUsers = (req, res, next) => {
     .catch(next);
 };
 
-module.exports.addUser = (req, res, next) => {
-  const {
-    name, about, avatar, email, password,
-  } = req.body;
-  // console.log({ name, about, avatar })
-  User.create({
-    name, about, avatar, email, password,
-  })
-    .then((user) => res.status(ok).send(user))
-    .catch(next);
-};
+// module.exports.addUser = (req, res, next) => {
+//   const {
+//     name, about, avatar, email, password,
+//   } = req.body;
+//   // console.log({ name, about, avatar })
+//   User.create({
+//     name, about, avatar, email, password,
+//   })
+//     .then((user) => res.status(ok).send(user))
+//     .catch(next);
+// };
 
 module.exports.getUser = (req, res, next) => {
   User.findById(req.params.userId)
