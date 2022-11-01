@@ -1,6 +1,8 @@
 const { default: mongoose } = require('mongoose');
 const Card = require('../models/card');
-const { BadRequestError, NotFoundError, UnauthorizedError, ForbiddenError } = require('../utils/errors');
+const {
+  BadRequestError, NotFoundError, UnauthorizedError, ForbiddenError,
+} = require('../utils/errors');
 const { ok } = require('../utils/status');
 
 module.exports.getCards = (req, res, next) => {
@@ -23,12 +25,12 @@ module.exports.deleteCard = (req, res, next) => {
     .orFail(new NotFoundError('Карточка с указанным _id не найдена.'))
     .then((card) => {
       if (req.user._id !== card.owner.toString()) {
-        throw new ForbiddenError('Удалять можно только свои карточки.')
+        throw new ForbiddenError('Удалять можно только свои карточки.');
       }
       card.remove();
       res.status(ok).send(card);
     })
-    .catch(next)
+    .catch(next);
 };
 
 module.exports.likeCard = (req, res, next) => Card.findByIdAndUpdate(
@@ -38,7 +40,7 @@ module.exports.likeCard = (req, res, next) => Card.findByIdAndUpdate(
 )
   .orFail(new NotFoundError('Передан несуществующий _id карточки.'))
   .then((card) => res.status(ok).send(card))
-  .catch(next)
+  .catch(next);
 
 module.exports.dislikeCard = (req, res, next) => Card.findByIdAndUpdate(
   req.params.cardId,
@@ -47,4 +49,4 @@ module.exports.dislikeCard = (req, res, next) => Card.findByIdAndUpdate(
 )
   .orFail(new NotFoundError('Передан несуществующий _id карточки.'))
   .then((card) => res.status(ok).send(card))
-  .catch(next)
+  .catch(next);

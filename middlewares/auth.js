@@ -4,17 +4,17 @@ const { UnauthorizedError } = require('../utils/errors');
 module.exports = (req, res, next) => {
   const token = req.headers.authorization;
   if (!token) {
-    throw new UnauthorizedError('Необходима авторизация.')
+    throw new UnauthorizedError('Необходима авторизация.');
   }
 
   let payload;
   try {
     payload = jwt.verify(token, 'mySecretKey');
   } catch (err) {
-    throw new UnauthorizedError('Необходима авторизация.')
+    throw new UnauthorizedError('Необходима авторизация.');
   }
 
   req.user = payload;
 
   next();
-}
+};
