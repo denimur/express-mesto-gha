@@ -1,5 +1,5 @@
-const { notFound } = require('../utils/status');
+const NotFoundError = require('../utils/NotFoundError');
 
-module.exports.notFoundController = (req, res) => {
-  res.status(notFound).send({ message: 'Запрашиваемый ресурс не найден' });
+module.exports.notFoundController = (req, res, next) => {
+  next(new NotFoundError('Запрашиваемый ресурс не найден'));
 };

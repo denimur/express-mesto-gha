@@ -3,8 +3,8 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const NotFoundError = require('../utils/NotFoundError');
 const UnauthorizedError = require('../utils/UnauthorizedError');
-const ForbiddenError = require('../utils/ForbiddenError');
 const ConflictError = require('../utils/ConflictError');
+const BadRequestError = require('../utils/BadRequestError');
 const { ok } = require('../utils/status');
 
 module.exports.createUser = (req, res, next) => {
@@ -25,6 +25,11 @@ module.exports.createUser = (req, res, next) => {
       if (err.code === 11000) {
         next(new ConflictError('Пользователь с такими данными уже существует.'));
       }
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Переданы неверные данные при создании пользователя.'));
+      } else {
+        next(err);
+      }
     });
 };
 
@@ -40,7 +45,13 @@ module.exports.getUser = (req, res, next) => {
     .then((user) => {
       res.status(ok).send(user);
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError('Переданы неверные данные.'));
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.getCurrentUser = (req, res, next) => {
@@ -62,7 +73,13 @@ module.exports.updateUser = (req, res, next) => {
   )
     .orFail(new NotFoundError('Пользователь по указанному _id не найден.'))
     .then((user) => res.status(ok).send(user))
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Переданы неверные данные при обновлении пользователя.'));
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.updateAvatar = (req, res, next) => {
@@ -73,13 +90,14 @@ module.exports.updateAvatar = (req, res, next) => {
     { new: true, runValidators: true },
   )
     .orFail(new NotFoundError('Пользователь по указанному _id не найден.'))
-    .then((user) => {
-      if (req.user._id !== user._id.toString()) {
-        throw new ForbiddenError('Можно редактировать только свой аватар.');
+    .then((user) => res.status(ok).send(user))
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Переданы неверные данные при обновлении аватара.'));
+      } else {
+        next(err);
       }
-      res.status(ok).send(user);
-    })
-    .catch(next);
+    });
 };
 
 module.exports.login = (req, res, next) => {
