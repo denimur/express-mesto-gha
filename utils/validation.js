@@ -18,10 +18,18 @@ function celebrateUpdateAvatar() {
   });
 }
 
-function celebrateParams() {
+function celebrateUserParams() {
   return celebrate({
     params: Joi.object().keys({
       userId: Joi.string().alphanum().length(24),
+    }),
+  });
+}
+
+function celebrateCardParams() {
+  return celebrate({
+    params: Joi.object().keys({
+      cardId: Joi.string().alphanum().length(24),
     }),
   });
 }
@@ -35,4 +43,10 @@ function celebrateCreateCard() {
   });
 }
 
-module.exports = { celebrateUpdateUser, celebrateUpdateAvatar, celebrateParams, celebrateCreateCard };
+module.exports = {
+  celebrateUpdateUser,
+  celebrateUpdateAvatar,
+  celebrateUserParams,
+  celebrateCreateCard,
+  celebrateCardParams,
+};

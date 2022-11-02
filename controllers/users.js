@@ -84,7 +84,7 @@ module.exports.updateAvatar = (req, res, next) => {
 
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
-  const { SECRET_KEY='mySecretKey' } = process.env;
+  const { SECRET_KEY = 'mySecretKey' } = process.env;
 
   User.findUserByCredentials(email, password)
     .then((user) => {
