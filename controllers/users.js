@@ -23,13 +23,13 @@ module.exports.createUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.code === 11000) {
-        next(new ConflictError('Пользователь с такими данными уже существует.'));
+        return next(new ConflictError('Пользователь с такими данными уже существует.'));
       }
       if (err.name === 'ValidationError') {
-        next(new BadRequestError('Переданы неверные данные при создании пользователя.'));
-      } else {
-        next(err);
+        return next(new BadRequestError('Переданы неверные данные при создании пользователя.'));
       }
+
+      return next(err);
     });
 };
 
