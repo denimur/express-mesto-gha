@@ -25,7 +25,6 @@ module.exports.createUser = (req, res, next) => {
       if (err.code === 11000) {
         next(new ConflictError('Пользователь с такими данными уже существует.'));
       }
-      // next(err);
     });
 };
 
@@ -34,18 +33,6 @@ module.exports.getUsers = (req, res, next) => {
     .then((data) => res.status(ok).send({ data }))
     .catch(next);
 };
-
-// module.exports.addUser = (req, res, next) => {
-//   const {
-//     name, about, avatar, email, password,
-//   } = req.body;
-//   // console.log({ name, about, avatar })
-//   User.create({
-//     name, about, avatar, email, password,
-//   })
-//     .then((user) => res.status(ok).send(user))
-//     .catch(next);
-// };
 
 module.exports.getUser = (req, res, next) => {
   User.findById(req.params.userId)
@@ -97,21 +84,17 @@ module.exports.updateAvatar = (req, res, next) => {
 
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
+  const { SECRET_KEY='mySecretKey' } = process.env;
 
   User.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, 'mySecretKey', { expiresIn: '7d' });
+      const token = jwt.sign({ _id: user._id }, SECRET_KEY, { expiresIn: '7d' });
       if (!token) {
         throw new UnauthorizedError('Передан недействительный токен.');
       }
       res
         .status(ok)
         .send({ token });
-      // .cookie('token', token, {
-      // maxAge: 3600000 * 24 * 7,
-      // httpOnly: true
-      // })
-      // .end();
     })
     .catch(next);
 };
