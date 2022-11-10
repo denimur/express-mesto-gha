@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const { errors } = require('celebrate');
 const errorHandler = require('./utils/errorHandler');
 const routes = require('./routes');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const app = express();
 
@@ -13,7 +14,9 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
 });
 
+app.use(requestLogger);
 app.use(routes);
+app.use(errorLogger);
 app.use(errors());
 app.use(errorHandler);
 
